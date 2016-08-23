@@ -248,6 +248,12 @@ config MACH_RSKRZA1
 	depends on ARCH_R7S72100
 	select USE_OF
 
+config MACH_IOT_GATEWAY
+	bool "Balboa IoT Gateway board"
+	depends on ARCH_R7S72100
+	select USE_OF
+	select ARCH_R7S72100_USE_USB_CLOCK
+
 config MACH_MARZEN
 	bool "MARZEN board"
 	depends on ARCH_R8A7779
