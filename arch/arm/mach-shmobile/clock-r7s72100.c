@@ -38,7 +38,11 @@
 #define STBCR11		0xfcfe0440
 #define STBCR12		0xfcfe0444
 
+#ifdef CONFIG_ARCH_R7S72100_USE_USB_CLOCK
+#define PLL_RATE 32
+#else
 #define PLL_RATE 30
+#endif
 
 static struct clk_mapping cpg_mapping = {
 	.phys	= 0xfcfe0000,
@@ -55,10 +59,17 @@ static struct clk r_clk = {
  * Default rate for the root input clock, reset this with clk_set_rate()
  * from the platform code.
  */
+#ifdef CONFIG_ARCH_R7S72100_USE_USB_CLOCK
+static struct clk usb_clk = {
+	.rate		= 48000000/4, /* pre-divided by 4 */
+	.mapping	= &cpg_mapping,
+};
+#else
 static struct clk extal_clk = {
 	.rate		= 13330000,
 	.mapping	= &cpg_mapping,
 };
+#endif
 
 static unsigned long pll_recalc(struct clk *clk)
 {
@@ -71,7 +82,11 @@ static struct sh_clk_ops pll_clk_ops = {
 
 static struct clk pll_clk = {
 	.ops		= &pll_clk_ops,
+#ifdef CONFIG_ARCH_R7S72100_USE_USB_CLOCK
+	.parent		= &usb_clk,
+#else
 	.parent		= &extal_clk,
+#endif
 	.flags		= CLK_ENABLE_ON_INIT,
 };
 
@@ -122,7 +137,11 @@ static struct clk peripheral1_clk = {
 
 struct clk *main_clks[] = {
 	&r_clk,
+#ifdef CONFIG_ARCH_R7S72100_USE_USB_CLOCK
+	&usb_clk,
+#else
 	&extal_clk,
+#endif
 	&pll_clk,
 	&bus_clk,
 	&peripheral0_clk,
@@ -226,7 +245,11 @@ static struct clk mstp_clks[MSTP_NR] = {
 static struct clk_lookup lookups[] = {
 	/* main clocks */
 	CLKDEV_CON_ID("rclk", &r_clk),
+#ifdef CONFIG_ARCH_R7S72100_USE_USB_CLOCK
+	CLKDEV_CON_ID("usbclk", &usb_clk),
+#else
 	CLKDEV_CON_ID("extal", &extal_clk),
+#endif
 	CLKDEV_CON_ID("pll_clk", &pll_clk),
 	CLKDEV_CON_ID("peripheral_clk", &peripheral1_clk),
 

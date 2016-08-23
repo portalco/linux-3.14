@@ -324,3 +324,17 @@ config SHMOBILE_TIMER_HZ
 endmenu
 
 endif
+
+
+if ARCH_R7S72100
+
+menu "RZ/A1 configuration"
+
+config ARCH_R7S72100_USE_USB_CLOCK
+	bool "Use 48MHz clock from USB_CLK input instead of EXTAL input"
+	default n
+
+endmenu
+
+endif
+
