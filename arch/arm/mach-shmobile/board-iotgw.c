@@ -323,6 +323,22 @@ static struct flash_platform_data spibsc0_flash_pdata = {
 	.type = "s25fl256s",
 };
 
+static struct mtd_partition rspi1_flash_partitions[] = {
+	{
+		.name		= "rspi1_data",
+		.offset		= 0x00000000,
+		.size		= MTDPART_SIZ_FULL,
+		.mask_flags	= MTD_WRITEABLE,
+	},
+};
+
+static struct flash_platform_data rspi1_flash_pdata = {
+	.name	= "m25p80",
+	.parts	= rspi1_flash_partitions,
+	.nr_parts = ARRAY_SIZE(rspi1_flash_partitions),
+	.type = "n25q00",
+};
+
 /* QSPI Flash (Memory Map Mode, read only) */
 static struct mtd_partition qspi_flash_partitions[] __initdata = {
 	{
@@ -389,13 +405,13 @@ static struct spi_board_info iotgw_spi_devices[] __initdata = {
 		.chip_select = 0,
 		.platform_data = &spibsc0_flash_pdata,
 	},
-//	{
-//		/* SPI Flash1 */
-//		.modalias = "m25p80",
-//		.bus_num = 6, XXXXXXXXXXXXX
-//		.chip_select = 0,
-//		.platform_data = &spibsc1_flash_pdata, XXXXXXXXXX
-//	},
+	{
+		/* SPI Flash1 */
+		.modalias = "m25p80",
+		.bus_num = 1,
+		.chip_select = 0,
+		.platform_data = &rspi1_flash_pdata,
+	},
 };
 
 /* spibsc0 */
@@ -781,7 +797,6 @@ static void __init iotgw_add_standard_devices(void)
 	/* Need to disable spibsc if using memory mapped QSPI */
 	platform_device_register_full(&qspi_flash_info);
 #endif
-//	platform_device_register_full(&rspi1_info);
 
 	if (usbgs == 0) {
 		platform_device_register_full(&r8a66597_usb_gadget0_info);
