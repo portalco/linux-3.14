@@ -748,7 +748,7 @@ static struct resource sci##index##_resources[] = {			\
 	DEFINE_RES_IRQ(irq),						\
 }									\
 
-R7S72100_SCI(0, 0xe800b000, gic_iid(347));
+//R7S72100_SCI(0, 0xe800b000, gic_iid(347));
 R7S72100_SCI(1, 0xe800b800, gic_iid(351));
 
 #define r7s72100_register_sci(index)					       \
@@ -848,7 +848,7 @@ static void rza1_restart(enum reboot_mode mode, const char *cmd)
 	while(1); /* Wait for WDT overflow */
 }
 
-void __init r7s72100_init_early(void)
+void __init iotgw_init_early(void)
 {
 	shmobile_init_delay();
 
@@ -865,7 +865,7 @@ static const char * const iotgw_boards_compat_dt[] __initconst = {
 };
 
 DT_MACHINE_START(IOTGW_DT, "iotgw")
-	.init_early	= r7s72100_init_early,
+	.init_early	= iotgw_init_early,
 	.init_machine	= iotgw_add_standard_devices,
 	.dt_compat	= iotgw_boards_compat_dt,
 	.map_io		= rza1_map_io,
