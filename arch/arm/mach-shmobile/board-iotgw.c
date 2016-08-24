@@ -1,6 +1,7 @@
 /*
  * Balboa IoT Gateway board support
  *
+ * Based on Farwater-Geo board.
  * Based on RSKRZA1 board.
  *
  * Copyright (C) 2016  PortalCo
@@ -188,15 +189,15 @@ static const struct rza1_dma_slave_config rza1_dma_slaves[] = {
 		.chcfg		= CHCFG(0x0, 0x0, 0x1, 0x1, 0x1, 0x1, 0x1, 0x0),
 		.dmars		= DMARS(0x2, 0x40),
 	}, {
-		.slave_id	= RZA1DMA_SLAVE_SCIF1_TX, XXXXXXXXXXXXX
-		.addr		= 0xe800880c,		/* SCFTDR of SCIF3 */
+		.slave_id	= RZA1DMA_SLAVE_SCIF1_TX,
+		.addr		= 0xe800780c,		/* SCFTDR of SCIF1 */
 		.chcfg		= CHCFG(0x1, 0x0, 0x1, 0x1, 0x2, 0x0, 0x0, 0x0),
-		.dmars		= DMARS(0x1, 0x1B),
+		.dmars		= DMARS(0x1, 0x19),
 	}, {
-		.slave_id	= RZA1DMA_SLAVE_SCIF1_RX, XXXXXXXXXXXXX
-		.addr		= 0xe8008814,		/* SCFRDR of SCIF3 */
+		.slave_id	= RZA1DMA_SLAVE_SCIF1_RX,
+		.addr		= 0xe8007814,		/* SCFRDR of SCIF1 */
 		.chcfg		= CHCFG(0x0, 0x0, 0x1, 0x1, 0x2, 0x0, 0x0, 0x0),
-		.dmars		= DMARS(0x2, 0x1B),
+		.dmars		= DMARS(0x2, 0x19),
 	},
 
 };
@@ -363,11 +364,11 @@ static const struct resource rspi##idx##_resources[] __initconst = {	\
 	DEFINE_RES_IRQ_NAMED(irq + 2, "tx"),				\
 }
 
-RSPI_RESOURCE(0, 0xe800c800, gic_iid(270));
+//RSPI_RESOURCE(0, 0xe800c800, gic_iid(270));
 RSPI_RESOURCE(1, 0xe800d000, gic_iid(273));
-RSPI_RESOURCE(2, 0xe800d800, gic_iid(276));
-RSPI_RESOURCE(3, 0xe800e000, gic_iid(279));
-RSPI_RESOURCE(4, 0xe800e800, gic_iid(282));
+//RSPI_RESOURCE(2, 0xe800d800, gic_iid(276));
+//RSPI_RESOURCE(3, 0xe800e000, gic_iid(279));
+//RSPI_RESOURCE(4, 0xe800e800, gic_iid(282));
 
 static const struct rspi_plat_data rspi_pdata __initconst = {
 	.num_chipselect	= 1,
@@ -388,13 +389,13 @@ static struct spi_board_info iotgw_spi_devices[] __initdata = {
 		.chip_select = 0,
 		.platform_data = &spibsc0_flash_pdata,
 	},
-	{
-		/* SPI Flash1 */
-		.modalias = "m25p80",
-		.bus_num = 6, XXXXXXXXXXXXX
-		.chip_select = 0,
-		.platform_data = &spibsc1_flash_pdata, XXXXXXXXXX
-	},
+//	{
+//		/* SPI Flash1 */
+//		.modalias = "m25p80",
+//		.bus_num = 6, XXXXXXXXXXXXX
+//		.chip_select = 0,
+//		.platform_data = &spibsc1_flash_pdata, XXXXXXXXXX
+//	},
 };
 
 /* spibsc0 */
@@ -496,13 +497,13 @@ static const struct platform_device_info r8a66597_usb_gadget1_info __initconst =
 static struct gpio_led iotgw_leds[] = {
         {
                 .name		= "led2",
-                .gpio		= 10, // Pin 17 is P6_0, named LED2
+                .gpio		= 82, // Pin 17 is P6_0, named LED2
 		.active_low	= 1,
                 .default_state	= LEDS_GPIO_DEFSTATE_ON,
         },
         {
                 .name		= "led3",
-                .gpio		= 10, // Pin 19 is P6_1, named LED2
+                .gpio		= 83, // Pin 19 is P6_1, named LED3
 		.active_low	= 1,
                 .default_state	= LEDS_GPIO_DEFSTATE_ON,
         },
@@ -691,15 +692,14 @@ static struct resource scif##index##_resources[] = {			\
 	DEFINE_RES_IRQ(irq),						\
 }									\
 
-R7S72100_SCIF(0, 0xe8007000, gic_iid(221), 0, 0);
+//R7S72100_SCIF(0, 0xe8007000, gic_iid(221), 0, 0);
 R7S72100_SCIF(1, 0xe8007800, gic_iid(225), 0, 0);
 R7S72100_SCIF(2, 0xe8008000, gic_iid(229), 0, 0);
-R7S72100_SCIF(3, 0xe8008800, gic_iid(233), 0, 0);
-R7S72100_SCIF(4, 0xe8009000, gic_iid(237), 0, 0);
-R7S72100_SCIF(5, 0xe8009800, gic_iid(241), 0, 0);
-R7S72100_SCIF(6, 0xe800a000, gic_iid(245), 0, 0);
-R7S72100_SCIF(7, 0xe800a800, gic_iid(249), 0, 0);
-XXXXXXXXXXXXXXXXXXXXXXXXX
+//R7S72100_SCIF(3, 0xe8008800, gic_iid(233), 0, 0);
+//R7S72100_SCIF(4, 0xe8009000, gic_iid(237), 0, 0);
+//R7S72100_SCIF(5, 0xe8009800, gic_iid(241), 0, 0);
+//R7S72100_SCIF(6, 0xe800a000, gic_iid(245), 0, 0);
+//R7S72100_SCIF(7, 0xe800a800, gic_iid(249), 0, 0);
 
 #define r7s72100_register_scif(index)					\
 	do {								\
@@ -776,13 +776,12 @@ static void __init iotgw_add_standard_devices(void)
 	platform_device_register(&leds_device);
 
 #if !defined(CONFIG_XIP_KERNEL) && defined(CONFIG_SPI_SH_SPIBSC)
-	/* Need to disable both spibsc channels if using memory mapped QSPI */
 	platform_device_register_full(&spibsc0_info);
-	platform_device_register_full(&spibsc1_info);
 #else
+	/* Need to disable spibsc if using memory mapped QSPI */
 	platform_device_register_full(&qspi_flash_info);
-	platform_device_register_full(&spibsc1_info);
-#endif            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#endif
+//	platform_device_register_full(&rspi1_info);
 
 	if (usbgs == 0) {
 		platform_device_register_full(&r8a66597_usb_gadget0_info);
@@ -796,24 +795,23 @@ static void __init iotgw_add_standard_devices(void)
 	}
 
 //	r7s72100_register_rspi(0);	/* Not used */
-//	r7s72100_register_rspi(1);	/* Not used */
+	r7s72100_register_rspi(1);	/* 128MB SPI flash */
 //	r7s72100_register_rspi(2);	/* Not used */
 //	r7s72100_register_rspi(3);	/* Not used */
 //	r7s72100_register_rspi(4);	/* Not used */
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 	/* Register SPI device information */
 	spi_register_board_info(iotgw_spi_devices,
 				ARRAY_SIZE(iotgw_spi_devices));
 
-	r7s72100_register_scif(0);
+//	r7s72100_register_scif(0);
 	r7s72100_register_scif(1);
 	r7s72100_register_scif(2);
-	r7s72100_register_scif(3);
-	r7s72100_register_scif(4);
+//	r7s72100_register_scif(3);
+//	r7s72100_register_scif(4);
 
 	// Register also SCI0 and SCI1 ports
-	r7s72100_register_sci(0);
+//	r7s72100_register_sci(0);
 	r7s72100_register_sci(1);
 }
 
@@ -847,7 +845,7 @@ void __init r7s72100_init_early(void)
 }
 
 static const char * const iotgw_boards_compat_dt[] __initconst = {
-	"renesas,rskrza1",
+	"renesas,iotgw",
 	NULL,
 };
 
