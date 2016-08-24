@@ -736,23 +736,22 @@ static const struct plat_sci_port sci##index##_platform_data = {	\
 	.type		= PORT_SCI,					\
 	.regtype	= SCIx_SCI_REGTYPE,				\
 	.flags		= UPF_BOOT_AUTOCONF | UPF_IOREMAP,		\
-	.scscr		= SCSCR_RIE | SCSCR_TIE | SCSCR_RE | SCSCR_TE |	\
-			  SCSCR_REIE,					\
+	.scscr		= SCSCR_RE | SCSCR_TE | SCSCR_REIE,		\
 };									\
 									\
 static struct resource sci##index##_resources[] = {			\
-	DEFINE_RES_MEM(baseaddr, 0x10),					\
+	DEFINE_RES_MEM(baseaddr, 0x100),				\
+	DEFINE_RES_IRQ(irq),						\
 	DEFINE_RES_IRQ(irq + 1),					\
 	DEFINE_RES_IRQ(irq + 2),					\
-	DEFINE_RES_IRQ(irq + 3),					\
-	DEFINE_RES_IRQ(irq),						\
+	DEFINE_RES_IRQ(-1),						\
 }									\
 
-//R7S72100_SCI(0, 0xe800b000, gic_iid(347));
-R7S72100_SCI(1, 0xe800b800, gic_iid(351));
+//R7S72100_SCI(8, 0xe800b000, gic_iid(347));
+R7S72100_SCI(9, 0xe800b800, gic_iid(351));
 
 #define r7s72100_register_sci(index)					       \
-	platform_device_register_resndata(&platform_bus, "sh-sci", index+8,    \
+	platform_device_register_resndata(&platform_bus, "sh-sci", index,      \
 					  sci##index##_resources,	       \
 					  ARRAY_SIZE(sci##index##_resources),  \
 					  &sci##index##_platform_data,	       \
@@ -761,6 +760,8 @@ R7S72100_SCI(1, 0xe800b800, gic_iid(351));
 
 static void __init iotgw_add_standard_devices(void)
 {
+	void*	ICDICFR21_22;
+
 #ifdef CONFIG_CACHE_L2X0
 	/* Early BRESP enable, 16K*8way(defualt) */
 	/* NOTES: BRESP can be set for IP version after r2p0 */
@@ -825,9 +826,16 @@ static void __init iotgw_add_standard_devices(void)
 //	r7s72100_register_scif(3);
 //	r7s72100_register_scif(4);
 
-	// Register also SCI0 and SCI1 ports
-//	r7s72100_register_sci(0);
-	r7s72100_register_sci(1);
+	// Register also SCI0 and SCI1 ports:
+
+	/* Chip bug - set SCI RxD0/TxD0 interrupt to edge (POR is level) */
+	ICDICFR21_22 = ioremap_nocache(0xE8201C54, 0x8);
+	*((u32 *)ICDICFR21_22) = 0x5F555555;            /* SCI0 */
+	*((u32 *)(ICDICFR21_22)+1) = 0x5555555F;        /* SCI1 */
+	iounmap(ICDICFR21_22);
+
+//	r7s72100_register_sci(8);
+	r7s72100_register_sci(9);
 }
 
 #define WTCSR 0
