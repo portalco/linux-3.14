@@ -267,7 +267,7 @@ CONFIG_ARCH_R7S72100=y
 # CONFIG_ARCH_R8A7779 is not set
 # CONFIG_ARCH_R8A7790 is not set
 # CONFIG_ARCH_R8A7791 is not set
-CONFIG_MACH_GENMAI=y
+# CONFIG_MACH_GENMAI is not set
 
 #
 # Renesas ARM SoCs System Type
