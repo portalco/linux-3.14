@@ -76,6 +76,7 @@
 /* Board Options */
 //#define RSPI_TESTING	/* Uncomment for RSPI4 enabled on CN15 */
 //#define SCI_TESTING	/* Uncomment for SCI0 enabled on JP1 */
+//#define HDMI_TESTING  /* Uncomment to enable the HDMI port on the TFT App Board */
 
 
 /*
@@ -138,8 +139,8 @@ static struct map_desc rza1_io_desc[] __initdata = {
 void __init r7s72100_map_io(void)
 {
 #ifdef CONFIG_DEBUG_LL
-	/* Note: Becase we defined a .map_io handler, we must manually set our
-	   SCIF2 memory mapping here. see arch/arm/mm/mmu.c */
+	/* Note: Becase we defined a .map_io handler, we must manually
+	   call debug_ll_io_init here. see arch/arm/mm/mmu.c */
 	debug_ll_io_init();
 #endif
 	iotable_init(rza1_io_desc, ARRAY_SIZE(rza1_io_desc));
@@ -1893,7 +1894,7 @@ static void __init rskrza1_add_standard_devices(void)
 #endif
 
 #ifdef CONFIG_CACHE_L2X0
-	/* Early BRESP enable, 16K*8way(defualt) */
+	/* Early BRESP enable, 16K*8way(default) */
 	/* NOTES: BRESP can be set for IP version after r2p0 */
 	/*        As of linux-3.16, cache-l2x0.c handles this automatically */
 #if LINUX_VERSION_CODE <= KERNEL_VERSION(3,16,0)
@@ -1951,7 +1952,7 @@ static void __init rskrza1_add_standard_devices(void)
 
 	/* Set up IRQ for touchscreen */
 	{
-		/* Set for low edge trigger */
+		/* Manually set IRQ1 for 'low level' trigger in Interrupt Control Register 1 */
 		void __iomem *irc1 = IOMEM(0xfcfef802);
 		__raw_writew((__raw_readw(irc1) & ~(0x3 << 2)), irc1);
 		r7s72100_pfc_pin_assign(P4_9, ALT8, DIIO_PBDC_DIS);  /* IRQ1 */
@@ -1993,7 +1994,7 @@ static void __init rskrza1_add_standard_devices(void)
 	platform_device_register_full(&rtc_info);	/* RTC */
 
 #ifndef CONFIG_VIDEO_SH_MOBILE_CEU
-	platform_device_register_full(&vdc5fb0_info);	/* VDC5 ch1 */
+	platform_device_register_full(&vdc5fb0_info);	/* VDC5 ch0 */
 	//platform_device_register_full(&simplefb_info);	/* Simplefb (FLOATING LAYER) */
 #else
 	platform_device_register_full(&ceu_info);		/* CEU */
@@ -2197,6 +2198,15 @@ static int heartbeat(void * data)
 
 static void __init rskrza1_init_late(void)
 {
+	/* Init TFP410 for RGB888->HDMI */
+#if defined(HDMI_TESTING)
+	int err;
+	u8 ctrl;
+	err = rza1_i2c_read_byte(0, 0x3C, 0x08, &ctrl);
+	if(!err) err = rza1_i2c_write_byte(0, 0x3C, 0x08, 0xbf);
+	if(!err) err = rza1_i2c_read_byte(0, 0x3C, 0x08, &ctrl);
+	printk("tfp410: HDMI port enabled\n");
+#endif
 	/* Make RSPI4 availible. */
 	/* Done here because we have to wait till i2c driver is ready */
 #if defined(RSPI_TESTING) || (defined SCI_TESTING)
