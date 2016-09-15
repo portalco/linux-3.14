@@ -424,6 +424,7 @@ static struct spi_board_info iotgw_spi_devices[] __initdata = {
 	{
 		/* SPI Flash1 */
 		.modalias = "m25p80",
+		.max_speed_hz = 108000000,
 		.bus_num = 1,
 		.chip_select = 0,
 		.platform_data = &rspi1_flash_pdata,
