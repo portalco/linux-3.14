@@ -290,6 +290,8 @@ static const struct platform_device_info rtc_info __initconst = {
 	.dma_mask	= DMA_BIT_MASK(32),
 };
 
+#if !defined(CONFIG_XIP_KERNEL) && defined(CONFIG_SPI_SH_SPIBSC)
+
 /* SPI NOR Flash */
 /* Single Flash only */
 static struct mtd_partition spibsc0_flash_partitions[] = {
@@ -305,9 +307,19 @@ static struct mtd_partition spibsc0_flash_partitions[] = {
 		.size		= 0x00040000,
 	},
 	{
+		.name		= "spibsc0_dtb",
+		.offset		= MTDPART_OFS_APPEND,
+		.size		= 0x00040000,
+	},
+	{
+		.name		= "spibsc0_spare",
+		.offset		= MTDPART_OFS_APPEND,
+		.size		= 0x000100000,
+	},
+	{
 		.name		= "spibsc0_kernel",
 		.offset		= MTDPART_OFS_APPEND,
-		.size		= 0x00400000,
+		.size		= 0x00600000,
 	},
 	{
 		.name		= "spibsc0_rootfs",
@@ -322,6 +334,8 @@ static struct flash_platform_data spibsc0_flash_pdata = {
 	.nr_parts = ARRAY_SIZE(spibsc0_flash_partitions),
 	.type = "s25fl256s",
 };
+
+#endif
 
 static struct mtd_partition rspi1_flash_partitions[] = {
 	{
@@ -398,6 +412,7 @@ static const struct rspi_plat_data rspi_pdata __initconst = {
 
 
 static struct spi_board_info iotgw_spi_devices[] __initdata = {
+#if !defined(CONFIG_XIP_KERNEL) && defined(CONFIG_SPI_SH_SPIBSC)
 	{
 		/* SPI Flash0 */
 		.modalias = "m25p80",
@@ -405,6 +420,7 @@ static struct spi_board_info iotgw_spi_devices[] __initdata = {
 		.chip_select = 0,
 		.platform_data = &spibsc0_flash_pdata,
 	},
+#endif
 	{
 		/* SPI Flash1 */
 		.modalias = "m25p80",
@@ -413,6 +429,8 @@ static struct spi_board_info iotgw_spi_devices[] __initdata = {
 		.platform_data = &rspi1_flash_pdata,
 	},
 };
+
+#if !defined(CONFIG_XIP_KERNEL) && defined(CONFIG_SPI_SH_SPIBSC)
 
 /* spibsc0 */
 static const struct sh_spibsc_info spibsc0_pdata = {
@@ -432,6 +450,7 @@ static const struct platform_device_info spibsc0_info __initconst = {
 	.res		= spibsc0_resources,
 };
 
+#endif
 
 /* USB Host */
 static const struct r8a66597_platdata r8a66597_pdata __initconst = {
