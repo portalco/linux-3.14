@@ -342,7 +342,6 @@ static struct mtd_partition rspi1_flash_partitions[] = {
 		.name		= "rspi1_data",
 		.offset		= 0x00000000,
 		.size		= MTDPART_SIZ_FULL,
-		.mask_flags	= MTD_WRITEABLE,
 	},
 };
 
