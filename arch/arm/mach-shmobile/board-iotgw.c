@@ -532,13 +532,13 @@ static const struct platform_device_info r8a66597_usb_gadget1_info __initconst =
 static struct gpio_led iotgw_leds[] = {
         {
                 .name		= "led2",
-                .gpio		= 82, // Pin 17 is P6_0, named LED2
+                .gpio		= 81, // Pin 17 is P6_0, named LED2
 		.active_low	= 1,
                 .default_state	= LEDS_GPIO_DEFSTATE_ON,
         },
         {
                 .name		= "led3",
-                .gpio		= 83, // Pin 19 is P6_1, named LED3
+                .gpio		= 82, // Pin 19 is P6_1, named LED3
 		.active_low	= 1,
                 .default_state	= LEDS_GPIO_DEFSTATE_ON,
         },
