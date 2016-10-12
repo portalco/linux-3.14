@@ -438,9 +438,31 @@ static int rspi_data_in(struct rspi_data *rspi)
 static int rspi_pio_transfer(struct rspi_data *rspi, const u8 *tx, u8 *rx,
 			     unsigned int n)
 {
+
+       u8 spcr;
+ 
+       spcr = rspi_read8( rspi, RSPI_SPCR);
+       if( (spcr & SPCR_MSTR) == 0 )
+       {
+            
+            /* clear the buffers */
+            rspi_write8( rspi, 0xC0, RSPI_SPBFCR);
+            asm("nop"); asm("nop");
+            rspi_write8( rspi, 0x00, RSPI_SPBFCR);
+ 
+            /* Reset back into Master mode */
+            rspi_write8( rspi, spcr | SPCR_MSTR, RSPI_SPCR);
+            
+        }
+
 	while (n-- > 0) {
 		if (tx) {
 			int ret = rspi_data_out(rspi, *tx++);
+			if (ret < 0)
+				return ret;
+		}
+		else {
+			int ret = rspi_data_out(rspi, 0);
 			if (ret < 0)
 				return ret;
 		}
@@ -449,6 +471,11 @@ static int rspi_pio_transfer(struct rspi_data *rspi, const u8 *tx, u8 *rx,
 			if (ret < 0)
 				return ret;
 			*rx++ = ret;
+		}
+		else {
+			int ret = rspi_data_in(rspi);
+			if (ret < 0)
+				return ret;
 		}
 	}
 
@@ -992,7 +1019,6 @@ static const struct spi_ops rspi_rz_ops = {
 	.set_config_register =	rspi_rz_set_config_register,
 	.transfer_one =		rspi_rz_transfer_one,
 	.mode_bits =		SPI_CPHA | SPI_CPOL | SPI_LOOP,
-	.flags =		SPI_MASTER_MUST_RX | SPI_MASTER_MUST_TX,
 	.fifo_size =		8,	/* 8 for TX, 32 for RX */
 };
 
@@ -1210,3 +1236,4 @@ MODULE_DESCRIPTION("Renesas RSPI bus driver");
 MODULE_LICENSE("GPL v2");
 MODULE_AUTHOR("Yoshihiro Shimoda");
 MODULE_ALIAS("platform:rspi");
+
