@@ -303,7 +303,6 @@ CONFIG_SHMOBILE_TIMER_HZ=128
 #
 # RZ/A1 configuration
 #
-CONFIG_ARCH_R7S72100_USE_USB_CLOCK=y
 
 #
 # Processor Type
