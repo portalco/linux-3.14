@@ -439,22 +439,6 @@ static int rspi_pio_transfer(struct rspi_data *rspi, const u8 *tx, u8 *rx,
 			     unsigned int n)
 {
 
-       u8 spcr;
- 
-       spcr = rspi_read8( rspi, RSPI_SPCR);
-       if( (spcr & SPCR_MSTR) == 0 )
-       {
-            
-            /* clear the buffers */
-            rspi_write8( rspi, 0xC0, RSPI_SPBFCR);
-            asm("nop"); asm("nop");
-            rspi_write8( rspi, 0x00, RSPI_SPBFCR);
- 
-            /* Reset back into Master mode */
-            rspi_write8( rspi, spcr | SPCR_MSTR, RSPI_SPCR);
-            
-        }
-
 	while (n-- > 0) {
 		if (tx) {
 			int ret = rspi_data_out(rspi, *tx++);
