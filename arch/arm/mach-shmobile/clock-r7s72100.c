@@ -38,11 +38,13 @@
 #define STBCR11		0xfcfe0440
 #define STBCR12		0xfcfe0444
 
-#ifdef CONFIG_ARCH_R7S72100_USE_USB_CLOCK
-#define PLL_RATE 32
-#else
-#define PLL_RATE 30
-#endif
+#define PPR0 0xFCFE3200
+#define PIBC0 0xFCFE7000
+
+#define MD_CLK(x)   ((x >> 2) & 1)	/* P0_2 */
+
+#define PLL_RATE_EXTAL 30
+#define PLL_RATE_USB 32
 
 static struct clk_mapping cpg_mapping = {
 	.phys	= 0xfcfe0000,
@@ -59,21 +61,22 @@ static struct clk r_clk = {
  * Default rate for the root input clock, reset this with clk_set_rate()
  * from the platform code.
  */
-#ifdef CONFIG_ARCH_R7S72100_USE_USB_CLOCK
-static struct clk usb_clk = {
-	.rate		= 48000000/4, /* pre-divided by 4 */
-	.mapping	= &cpg_mapping,
-};
-#else
 static struct clk extal_clk = {
 	.rate		= 13330000,
 	.mapping	= &cpg_mapping,
 };
-#endif
+
+static struct clk usb_clk = {
+	.rate		= 48000000/4, /* pre-divided by 4 */
+	.mapping	= &cpg_mapping,
+};
 
 static unsigned long pll_recalc(struct clk *clk)
 {
-	return clk->parent->rate * PLL_RATE;
+	if (clk->parent == &extal_clk)
+		return clk->parent->rate * PLL_RATE_EXTAL;
+	else
+		return clk->parent->rate * PLL_RATE_USB;
 }
 
 static struct sh_clk_ops pll_clk_ops = {
@@ -82,11 +85,7 @@ static struct sh_clk_ops pll_clk_ops = {
 
 static struct clk pll_clk = {
 	.ops		= &pll_clk_ops,
-#ifdef CONFIG_ARCH_R7S72100_USE_USB_CLOCK
-	.parent		= &usb_clk,
-#else
 	.parent		= &extal_clk,
-#endif
 	.flags		= CLK_ENABLE_ON_INIT,
 };
 
@@ -137,11 +136,8 @@ static struct clk peripheral1_clk = {
 
 struct clk *main_clks[] = {
 	&r_clk,
-#ifdef CONFIG_ARCH_R7S72100_USE_USB_CLOCK
-	&usb_clk,
-#else
 	&extal_clk,
-#endif
+	&usb_clk,
 	&pll_clk,
 	&bus_clk,
 	&peripheral0_clk,
@@ -248,11 +244,8 @@ static struct clk mstp_clks[MSTP_NR] = {
 static struct clk_lookup lookups[] = {
 	/* main clocks */
 	CLKDEV_CON_ID("rclk", &r_clk),
-#ifdef CONFIG_ARCH_R7S72100_USE_USB_CLOCK
-	CLKDEV_CON_ID("usbclk", &usb_clk),
-#else
 	CLKDEV_CON_ID("extal", &extal_clk),
-#endif
+	CLKDEV_CON_ID("usbclk", &usb_clk),
 	CLKDEV_CON_ID("pll_clk", &pll_clk),
 	CLKDEV_CON_ID("peripheral_clk", &peripheral1_clk),
 
@@ -306,9 +299,30 @@ static struct clk_lookup lookups[] = {
 	CLKDEV_ICK_ID("fck", "sh-mtu2", &mstp_clks[MSTP33]),
 };
 
+static u16 __init rz_cpg_read_mode_pins(void)
+{
+	void __iomem *ppr0, *pibc0;
+	u16 modes;
+
+	ppr0 = ioremap_nocache(PPR0, 2);
+	pibc0 = ioremap_nocache(PIBC0, 2);
+	BUG_ON(!ppr0 || !pibc0);
+	iowrite16(4, pibc0);	/* enable input buffer */
+	modes = ioread16(ppr0);
+	iounmap(ppr0);
+	iounmap(pibc0);
+
+	return modes;
+}
+
+
 void __init r7s72100_clock_init(void)
 {
 	int k, ret = 0;
+	unsigned int cpg_mode = MD_CLK(rz_cpg_read_mode_pins());
+
+	if( cpg_mode )
+		pll_clk.parent = &usb_clk;	/* USB clock boot */
 
 	for (k = 0; !ret && (k < ARRAY_SIZE(main_clks)); k++)
 		ret = clk_register(main_clks[k]);
