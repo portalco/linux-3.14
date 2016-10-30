@@ -249,6 +249,47 @@ static const struct platform_device_info ether_info __initconst = {
 	.dma_mask	= DMA_BIT_MASK(32),
 };
 
+/* I2C1*/
+static const struct resource riic1_resources[] __initconst = {
+	DEFINE_RES_MEM(0xfcfee400, 0x400),
+	DEFINE_RES_IRQ(gic_iid(197)),
+	DEFINE_RES_NAMED(gic_iid(198),1,NULL,IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHEDGE),
+	DEFINE_RES_NAMED(gic_iid(199),1,NULL,IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHEDGE),
+	DEFINE_RES_IRQ(gic_iid(200)),
+	DEFINE_RES_IRQ(gic_iid(201)),
+	DEFINE_RES_IRQ(gic_iid(202)),
+	DEFINE_RES_IRQ(gic_iid(203)),
+	DEFINE_RES_IRQ(gic_iid(204)),
+};
+
+static const struct riic_platform_data riic1_pdata __initconst = {
+	.bus_rate = 100,
+};
+
+static const struct platform_device_info riic1_info __initconst = {
+	.parent		= &platform_bus,
+	.name		= "i2c-riic",
+	.id		= 1,
+	.res		= riic1_resources,
+	.num_res	= ARRAY_SIZE(riic1_resources),
+	.data		= &riic1_pdata,
+	.size_data	= sizeof(riic1_pdata),
+	.dma_mask	= DMA_BIT_MASK(32),
+};
+
+
+static struct at24_platform_data eeprom_pdata = {
+	.byte_len = 128,
+	.page_size = 8,
+};
+
+static const struct i2c_board_info i2c1_devices[] __initconst = {
+	{
+		I2C_BOARD_INFO("at24", 0x50),
+		.platform_data = &eeprom_pdata,
+	},
+};
+
 /* OSTM */
 static struct rza1_ostm_pdata ostm_pdata = {
 	.clksrc.name = "ostm.0",
@@ -635,7 +676,7 @@ struct irq_res const irq_keep_list[] __initconst = {
 	{139, 1},	/* MTU2-TGI0A (Kernel jiffies) */
 //	{170, 2}, {146, 2},	/* ADC and MTU2-TGI1A */
 //	{189, 8},	/* RIIC0 */
-//	{197, 8},	/* RIIC1 */
+	{197, 8},	/* RIIC1 */
 //	{205, 8},	/* RIIC2 */
 //	{213, 8},	/* RIIC3 */
 	{221, 4},	/* SCIF0 */
@@ -803,10 +844,13 @@ static void __init iotgw_add_standard_devices(void)
 	platform_device_register_full(&rz_can_device);
 #endif
 
+	i2c_register_board_info(0, i2c1_devices, ARRAY_SIZE(i2c1_devices));
+
 	platform_device_register_full(&ostm_info);
 	platform_device_register_full(&dma_info);
 	platform_device_register_full(&ether_info);
 
+	platform_device_register_full(&riic1_info);
 	platform_device_register_full(&rtc_info);
 
 	platform_device_register(&leds_device);
